@@ -11,7 +11,7 @@ namespace DrustveneMreze.Domain
         public string Name {  get; set; }
         public string Surname {  get; set; }
         public DateTime BirthDate { get; set; }
-        public List<Group> Groups { get; set; } = new List<Group>();
+        public List<Group>? Groups { get; set; } = null;
         public User(int id, string username, string name, string surname, DateTime birthDate)
         {
             Id = id;
