@@ -25,11 +25,13 @@ namespace DrustveneMreze.Repositories
             {
                 string[] attributes = line.Split(',');
                 int id = int.Parse(attributes[0]);
+
                 string username = attributes[1];
                 string name = attributes[2];
                 string surname = attributes[3];
                 DateTime birthDate = DateTime.ParseExact(attributes[4], "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 User user = new User(id, username, name, surname, birthDate);
+
                 Data[id] = user;
 
             }
@@ -40,10 +42,12 @@ namespace DrustveneMreze.Repositories
             List<string> lines = new List<string>();
             foreach (User user in Data.Values)
             {
+
                 lines.Add($"{user.Id},{user.Username},{user.Name},{user.Surname},{user.BirthDate:yyyy-MM-dd}");
             }
             File.WriteAllLines(filePath, lines);
         }
+
 
     }
 }

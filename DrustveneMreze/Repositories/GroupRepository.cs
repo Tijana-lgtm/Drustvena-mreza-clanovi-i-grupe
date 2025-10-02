@@ -7,6 +7,7 @@ namespace DrustveneMreze.Repositories
 {
     public class GroupRepository
     {
+
         private const string filePath = "Data/grupe.csv";
         public static Dictionary<int, Group> Data;
 
@@ -20,7 +21,9 @@ namespace DrustveneMreze.Repositories
 
         private void Load()
         {
+
             Data = new Dictionary<int, Group>();
+
             string[] lines = File.ReadAllLines(filePath);
             foreach (string line in lines)
             {
@@ -31,17 +34,20 @@ namespace DrustveneMreze.Repositories
 
                 Group group = new Group(id, groupName, incorporation);
                 Data[id] = group;
+
             }
         }
 
         public void Save()
         {
+
             List<string> groupLines = new List<string>();
             foreach (Group group in Data.Values)
             {
                 groupLines.Add($"{group.Id},{group.GroupName},{group.Incorporation:yyyy-MM-dd}");
             }
             File.WriteAllLines(filePath, groupLines);
+
         }
     }
 }
