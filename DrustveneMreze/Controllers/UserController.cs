@@ -1,32 +1,72 @@
-﻿using DrustveneMreze.Domain;
+﻿using System.Reflection.Metadata.Ecma335;
+using DrustveneMreze.Domain;
 using DrustveneMreze.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 
 namespace DrustveneMreze.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
 
     public class UserController : ControllerBase
     {
+
         private UserRepository userRepository = new UserRepository();
 
         [HttpGet]
         public ActionResult<List<User>> GetAll()
         {
-            GroupRepository groupRepository = new GroupRepository();
-            UserRepository userRepository = new UserRepository();
+          
 
-            List<User> users = UserRepository.Data.Values.ToList();
+            List<User> users = GetAllUsers();
             return Ok(users);
         }
+
+        private List<User> GetAllUsers()
+        {
+            List<User> users = new List<User>();
+
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                using SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    User user = new User()
+                    {
+                        Id = Convert.ToInt32(reader["Id"]),
+                        Username = reader["Username"].ToString(),
+                        Name = reader["Name"].ToString(),
+                        Surname = reader["Surname"].ToString(),
+                        BirthDate = DateTime.Parse(reader["Birthday"].ToString())
+
+                    };
+                    users.Add(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
+            }
+            
+
+            return users;
+        }
+        
 
         [HttpGet("{id}")]
         public ActionResult<User> GetById(int id)
         {
             GroupRepository groupRepository = new GroupRepository();
-            UserRepository userRepository = new UserRepository();
+
             if (!UserRepository.Data.ContainsKey(id))
             {
                 return NotFound();

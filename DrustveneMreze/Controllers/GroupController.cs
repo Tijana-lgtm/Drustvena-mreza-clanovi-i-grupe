@@ -27,7 +27,7 @@ namespace DrustveneMreze.Controllers
 
             try
             {
-                SqliteConnection connection = new SqliteConnection("Data Source=data/database.db");
+                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
                 connection.Open();
 
                 string query = "SELECT Id, Name, CreationDate FROM Groups";

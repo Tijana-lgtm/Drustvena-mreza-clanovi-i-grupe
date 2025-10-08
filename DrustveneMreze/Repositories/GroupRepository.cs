@@ -10,6 +10,7 @@ namespace DrustveneMreze.Repositories
 
         private const string filePath = "Data/grupe.csv";
         private const string clanstvaPath = "Data/clanstva.csv";
+
         public static Dictionary<int, Group> Data;
 
         public GroupRepository()
@@ -44,6 +45,7 @@ namespace DrustveneMreze.Repositories
                 UserRepository userRepository = new UserRepository();
 
                 foreach (string line in linesClanstva)
+
                 {
                     string[] parts = line.Split(',');
                     int userId = int.Parse(parts[0]);
@@ -80,6 +82,7 @@ namespace DrustveneMreze.Repositories
                 }
             }
             File.WriteAllLines(clanstvaPath, membershipLines);
+
 
         }
     }
