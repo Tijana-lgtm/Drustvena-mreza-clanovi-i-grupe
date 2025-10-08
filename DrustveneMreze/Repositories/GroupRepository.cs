@@ -9,7 +9,11 @@ namespace DrustveneMreze.Repositories
     {
 
         private const string filePath = "Data/grupe.csv";
+<<<<<<< HEAD
         private const string clanstvaPath = "Data/clanstva.csv";
+=======
+        private const string membershipFilePath = "Data/clanstva.csv"; 
+>>>>>>> b3cef8fa7caa488d7e515163dd88f438a1a8001d
         public static Dictionary<int, Group> Data;
 
         public GroupRepository()
@@ -37,12 +41,21 @@ namespace DrustveneMreze.Repositories
                 Data[id] = group;
 
             }
+<<<<<<< HEAD
             if (File.Exists(clanstvaPath))
             {
                 string[] linesClanstva = File.ReadAllLines(clanstvaPath);
                 UserRepository userRepository = new UserRepository();
 
                 foreach (string line in linesClanstva)
+=======
+            if (File.Exists(membershipFilePath))
+            {
+                string[] membershipLines = File.ReadAllLines(membershipFilePath);
+                UserRepository userRepository = new UserRepository(); 
+
+                foreach (string line in membershipLines)
+>>>>>>> b3cef8fa7caa488d7e515163dd88f438a1a8001d
                 {
                     string[] parts = line.Split(',');
                     int userId = int.Parse(parts[0]);
@@ -78,7 +91,11 @@ namespace DrustveneMreze.Repositories
                     membershipLines.Add($"{user.Id},{group.Id}");
                 }
             }
+<<<<<<< HEAD
             File.WriteAllLines(clanstvaPath, membershipLines);
+=======
+            File.WriteAllLines(membershipFilePath, membershipLines);
+>>>>>>> b3cef8fa7caa488d7e515163dd88f438a1a8001d
 
         }
     }
