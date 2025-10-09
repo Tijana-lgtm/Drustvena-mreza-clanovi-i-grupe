@@ -1,25 +1,44 @@
-﻿using DrustveneMreze.Domain;
+﻿using System.Security.Cryptography.Xml;
+using DrustveneMreze.Domain;
 using DrustveneMreze.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+
 
 namespace DrustveneMreze.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/groups")]
     [ApiController]
+
+    
     public class GroupController : ControllerBase
     {
-        private GroupRepository groupRepository = new GroupRepository();
+        private readonly GroupDbRepository groupRepository;
+        private UserRepository userRepository = new UserRepository();
 
+        public GroupController()
+        {
+            groupRepository = new GroupDbRepository();
+        }
         [HttpGet]
         public ActionResult<List<Group>> GetAll()
         {
-            GroupRepository groupRepository = new GroupRepository();
-            UserRepository userRepository = new UserRepository();
+            List<Group> groupsFromDb = groupRepository.GetAll();
+            return Ok(groupsFromDb);
+        }
 
-            List<Group> group = GroupRepository.Data.Values.ToList();
+        [HttpGet("{id}")]
+        public ActionResult<Group> GetById(int id)
+        {
+            Group group = groupRepository.GetById(id);
+            if (group == null)
+            {
+                return NotFound();
+            }
             return Ok(group);
         }
+
 
         [HttpPost]
         public ActionResult<Group> Create([FromBody] Group newGroup)
@@ -31,7 +50,6 @@ namespace DrustveneMreze.Controllers
 
             newGroup.Id = GetNewId(GroupRepository.Data.Keys.ToList());
             GroupRepository.Data[newGroup.Id] = newGroup;
-            groupRepository.Save();
 
             return Ok(newGroup);
         }
@@ -45,7 +63,6 @@ namespace DrustveneMreze.Controllers
             }
 
             GroupRepository.Data.Remove(id);
-            groupRepository.Save();
 
             return NoContent();
         }

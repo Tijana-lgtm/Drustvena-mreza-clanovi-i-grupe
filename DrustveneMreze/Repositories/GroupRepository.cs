@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using DrustveneMreze.Domain;
+using Microsoft.Data.Sqlite;
 
 
 namespace DrustveneMreze.Repositories
@@ -9,7 +10,6 @@ namespace DrustveneMreze.Repositories
     {
 
         private const string filePath = "Data/grupe.csv";
-
         private const string clanstvaPath = "Data/clanstva.csv";
 
         public static Dictionary<int, Group> Data;
@@ -82,10 +82,101 @@ namespace DrustveneMreze.Repositories
                     membershipLines.Add($"{user.Id},{group.Id}");
                 }
             }
-
             File.WriteAllLines(clanstvaPath, membershipLines);
+        }
+    }
+    public class GroupDbRepository
+    {
+        public Group GetById(int id)
+        {
+            Group group = null;
 
+            try
+            {
+                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
 
+                string query = "SELECT Id, Name, CreationDate FROM Groups WHERE Id = @Id";
+
+                using (SqliteCommand command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            group = new Group();
+                            group.Id = reader.GetInt32(0);
+                            group.GroupName = reader.GetString(1);
+                            group.Incorporation = DateTime.Parse(reader.GetString(2));
+                        }
+                    }
+                }
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greska u formatu podataka: {ex.Message}");
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greska pri konekciji ili SQL upitu: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Pogresna operacija nad konekcijom ili komandama: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska: {ex.Message}");
+            }
+
+            return group;
+        }
+        public List<Group> GetAll()
+        {
+            List<Group> groups = new List<Group>();
+
+            try
+            {
+                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "SELECT Id, Name, CreationDate FROM Groups";
+
+                using (SqliteCommand command = new SqliteCommand(query, connection))
+                {
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Group group = new Group();
+                            group.Id = reader.GetInt32(0);
+                            group.GroupName = reader.GetString(1);
+                            group.Incorporation = DateTime.Parse(reader.GetString(2));
+                            groups.Add(group);
+                        }
+                    }
+                }
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greska u formatu podataka: {ex.Message}");
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greska pri konekciji ili SQL upitu: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Pogresna operacija nad konekcijom ili komandama: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska: {ex.Message}");
+            }
+
+            return groups;
         }
     }
 }

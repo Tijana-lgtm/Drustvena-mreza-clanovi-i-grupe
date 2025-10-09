@@ -19,9 +19,7 @@ namespace DrustveneMreze.Controllers
 
         [HttpGet]
         public ActionResult<List<User>> GetAll()
-        {
-          
-
+        {       
             List<User> users = userRepository.GetAll();
             return Ok(users);
         }
