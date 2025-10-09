@@ -10,18 +10,56 @@ namespace DrustveneMreze.Controllers
 {
     [Route("api/groups")]
     [ApiController]
-    public class GroupController : ControllerBase
-    {
-        private GroupRepository groupRepository = new GroupRepository();
-        private UserRepository userRepository = new UserRepository();
 
-        [HttpGet]
-        public ActionResult<List<Group>> GetAll()
+    public class GroupDbRepository
+    {
+        public Group GetById(int id)
         {
-            List<Group> groupsFromDb = GetAllFromDatabase();
-            return Ok(groupsFromDb);
+            Group group = null;
+
+            try
+            {
+                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "SELECT Id, Name, CreationDate FROM Groups WHERE Id = @Id";
+
+                using (SqliteCommand command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            group = new Group();
+                            group.Id = reader.GetInt32(0);
+                            group.GroupName = reader.GetString(1);
+                            group.Incorporation = DateTime.Parse(reader.GetString(2));
+                        }
+                    }
+                }
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greska u formatu podataka: {ex.Message}");
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greska pri konekciji ili SQL upitu: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Pogresna operacija nad konekcijom ili komandama: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska: {ex.Message}");
+            }
+
+            return group;
         }
-        private List<Group> GetAllFromDatabase()
+        public List<Group> GetAll()
         {
             List<Group> groups = new List<Group>();
 
@@ -66,6 +104,34 @@ namespace DrustveneMreze.Controllers
 
             return groups;
         }
+    }
+    public class GroupController : ControllerBase
+    {
+        private readonly GroupDbRepository groupRepository;
+        private UserRepository userRepository = new UserRepository();
+
+        public GroupController()
+        {
+            groupRepository = new GroupDbRepository();
+        }
+        [HttpGet]
+        public ActionResult<List<Group>> GetAll()
+        {
+            List<Group> groupsFromDb = groupRepository.GetAll();
+            return Ok(groupsFromDb);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Group> GetById(int id)
+        {
+            Group group = groupRepository.GetById(id);
+            if (group == null)
+            {
+                return NotFound();
+            }
+            return Ok(group);
+        }
+
 
         [HttpPost]
         public ActionResult<Group> Create([FromBody] Group newGroup)
@@ -77,7 +143,6 @@ namespace DrustveneMreze.Controllers
 
             newGroup.Id = GetNewId(GroupRepository.Data.Keys.ToList());
             GroupRepository.Data[newGroup.Id] = newGroup;
-            groupRepository.Save();
 
             return Ok(newGroup);
         }
@@ -91,7 +156,6 @@ namespace DrustveneMreze.Controllers
             }
 
             GroupRepository.Data.Remove(id);
-            groupRepository.Save();
 
             return NoContent();
         }
