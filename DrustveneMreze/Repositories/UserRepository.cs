@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using DrustveneMreze.Domain;
+using Microsoft.Data.Sqlite;
 
 namespace DrustveneMreze.Repositories
 {
@@ -50,4 +51,75 @@ namespace DrustveneMreze.Repositories
 
 
     }
+
+    public class UserDbRepository
+    {
+        public List<User> GetAll()
+        {
+            List<User> users = new List<User>();
+
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                using SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    User user = new User()
+                    {
+                        Id = Convert.ToInt32(reader["Id"]),
+                        Username = reader["Username"].ToString(),
+                        Name = reader["Name"].ToString(),
+                        Surname = reader["Surname"].ToString(),
+                        BirthDate = DateTime.Parse(reader["Birthday"].ToString())
+
+                    };
+                    users.Add(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
+            }
+
+
+            return users;
+        }
+
+        public User GetById(int id)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users WHERE Id = @id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@id", id);
+                using SqliteDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new User
+                    {
+                        Id = Convert.ToInt32(reader["Id"]),
+                        Username = reader["Username"].ToString(),
+                        Name = reader["Name"].ToString(),
+                        Surname = reader["Surname"].ToString(),
+                        BirthDate = DateTime.Parse(reader["Birthday"].ToString()),
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri citanju korisnika: " + ex.Message);
+            }
+            return null;
+        }
+    }
 }
+

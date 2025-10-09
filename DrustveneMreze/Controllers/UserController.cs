@@ -10,58 +10,23 @@ namespace DrustveneMreze.Controllers
     [Route("api/user")]
     [ApiController]
 
+    
     public class UserController : ControllerBase
     {
 
-        private UserRepository userRepository = new UserRepository();
+        private readonly UserDbRepository userRepository;
+
 
         [HttpGet]
         public ActionResult<List<User>> GetAll()
         {
           
 
-            List<User> users = GetAllUsers();
+            List<User> users = userRepository.GetAll();
             return Ok(users);
         }
 
-        private List<User> GetAllUsers()
-        {
-            List<User> users = new List<User>();
-
-            try
-            {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
-                connection.Open();
-
-                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
-
-                using SqliteCommand command = new SqliteCommand(query, connection);
-                using SqliteDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    User user = new User()
-                    {
-                        Id = Convert.ToInt32(reader["Id"]),
-                        Username = reader["Username"].ToString(),
-                        Name = reader["Name"].ToString(),
-                        Surname = reader["Surname"].ToString(),
-                        BirthDate = DateTime.Parse(reader["Birthday"].ToString())
-
-                    };
-                    users.Add(user);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
-            }
-            
-
-            return users;
-        }
         
-
         [HttpGet("{id}")]
         public ActionResult<User> GetById(int id)
         {
@@ -84,7 +49,6 @@ namespace DrustveneMreze.Controllers
 
             newUser.Id = SracunajNoviId(UserRepository.Data.Keys.ToList());
             UserRepository.Data[newUser.Id] = newUser;
-            userRepository.Save();
 
             return Ok(newUser);
         }
@@ -106,7 +70,6 @@ namespace DrustveneMreze.Controllers
             user.Name = uUser.Name;
             user.Surname = uUser.Surname;
             user.BirthDate = uUser.BirthDate;
-            userRepository.Save();
 
             return Ok(user);
         }
