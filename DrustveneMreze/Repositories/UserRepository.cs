@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
 using DrustveneMreze.Domain;
 using Microsoft.Data.Sqlite;
 
@@ -54,13 +55,19 @@ namespace DrustveneMreze.Repositories
 
     public class UserDbRepository
     {
+        private readonly string connectionString;
+
+        public UserDbRepository(IConfiguration configuration)
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
         public List<User> GetAll()
         {
-            List<User> users = new List<User>();
+            List<User> users = new List<User>();       
 
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
@@ -85,6 +92,7 @@ namespace DrustveneMreze.Repositories
             catch (Exception ex)
             {
                 Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
+                throw;
             }
 
 
@@ -95,7 +103,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
                 string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users WHERE Id = @id";
                 using SqliteCommand command = new SqliteCommand(query, connection);
@@ -125,7 +133,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "iNSERT INTO Users (Username, Name, Surname, Birthday) VALUES (@username, @name, @surname, @birthday); " + "SELECT LAST_INSERT_ROWID();";
@@ -152,7 +160,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "UPDATE Users SET Username = @username, Name = @name, Surname = @surname, Birthday = @Birthday WHERE Id = @id";
@@ -177,7 +185,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "DELETE FROM Users WHERE Id = @id";

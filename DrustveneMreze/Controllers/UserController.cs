@@ -16,99 +16,119 @@ namespace DrustveneMreze.Controllers
 
         private readonly UserDbRepository userRepository;
 
-        public UserController()
+        public UserController(IConfiguration configuration)
         {
-            userRepository = new UserDbRepository();
+            userRepository = new UserDbRepository(configuration);
         }
 
         [HttpGet]
         public ActionResult<List<User>> GetAll()
-        {       
-            List<User> users = userRepository.GetAll();
-            return Ok(users);
+        {
+            try
+            {
+                List<User> users = userRepository.GetAll();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Greska pri ucitavanju korisnika: " + ex.Message);
+            }
+            
         }
 
         
         [HttpGet("{id}")]
         public ActionResult<User> GetById(int id)
         {
-
-
-            if (!UserRepository.Data.ContainsKey(id))
+            try
             {
-                return NotFound();
+                if (!UserRepository.Data.ContainsKey(id))
+                {
+                    return NotFound();
+                }
+                return Ok(UserRepository.Data[id]);
             }
-            return Ok(UserRepository.Data[id]);
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Greska pri ucitavanju korisnika: " + ex.Message);
+            }         
         }
 
         [HttpPost]
         public ActionResult<User> Create([FromBody] User newUser)
         {
-            if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Name) || string.IsNullOrWhiteSpace(newUser.Surname) || newUser.BirthDate == DateTime.MinValue)
+            try
             {
-                return BadRequest();
-            }
+                if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Name) || string.IsNullOrWhiteSpace(newUser.Surname) || newUser.BirthDate == DateTime.MinValue)
+                {
+                    return BadRequest();
+                }
 
-            var createdUser = userRepository.CreateUser(newUser);
-            if (createdUser == null)
-            {
-                return StatusCode(500, "Greska pri kreiranju korisnika.");
+                var createdUser = userRepository.CreateUser(newUser);
+                if (createdUser == null)
+                {
+                    return StatusCode(500, "Greska pri kreiranju korisnika.");
+                }
+                return Ok(createdUser);
             }
-            return Ok(createdUser);
+            catch(Exception ex)
+            {
+                return StatusCode(500, "Kreiranje korisnika nije uspesno, greska: " + ex.Message);
+            }           
         }
 
         [HttpPut("{id}")]
         public ActionResult<User> Update(int id, [FromBody] User uUser)
         {
-            if (string.IsNullOrWhiteSpace(uUser.Username) || string.IsNullOrWhiteSpace(uUser.Name) || string.IsNullOrWhiteSpace(uUser.Surname) || uUser.BirthDate == DateTime.MinValue)
+            try
             {
-                return BadRequest();
-            }
-            var existingUser = userRepository.GetById(id);
-            if (existingUser == null)
-            {
-                return NotFound("Korisnik nije pronadjen.");
-            }
+                if (string.IsNullOrWhiteSpace(uUser.Username) || string.IsNullOrWhiteSpace(uUser.Name) || string.IsNullOrWhiteSpace(uUser.Surname) || uUser.BirthDate == DateTime.MinValue)
+                {
+                    return BadRequest();
+                }
+                var existingUser = userRepository.GetById(id);
+                if (existingUser == null)
+                {
+                    return NotFound("Korisnik nije pronadjen.");
+                }
 
-            bool success = userRepository.UpdateUser(id, uUser);
-            if (!success)
-            {
-                return StatusCode(500, "Greska pri azuriranju korisnika.");
+                bool success = userRepository.UpdateUser(id, uUser);
+                if (!success)
+                {
+                    return StatusCode(500, "Greska pri azuriranju korisnika.");
+                }
+                uUser.Id = id;
+                return Ok(uUser);
             }
-            uUser.Id = id;
-            return Ok(uUser);
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Azuriranje korisnika nije uspesno, greska: " + ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var deleteUser = userRepository.GetById(id);
-            if(deleteUser == null)
+            try
             {
-                return NotFound("Korisnik ne postoji.");
-            }
-
-            bool sucessfullDel = userRepository.Delete(id);
-            if (!sucessfullDel)
-            {
-                return StatusCode(500, "Greska pri brisanju korisnika.");
-            }
-            return Ok("Korisnik uspesno obrisan");
-        }
-
-
-        private int SracunajNoviId(List<int> ids)
-        {
-            int maxId = 0;
-            foreach (int id in ids)
-            {
-                if (id > maxId)
+                var deleteUser = userRepository.GetById(id);
+                if (deleteUser == null)
                 {
-                    maxId = id;
+                    return NotFound("Korisnik ne postoji.");
                 }
-            }
-            return maxId + 1;
-        }
 
+                bool sucessfullDel = userRepository.Delete(id);
+                if (!sucessfullDel)
+                {
+                    return StatusCode(500, "Greska pri brisanju korisnika.");
+                }
+                return Ok("Korisnik uspesno obrisan");
+            }
+            catch(Exception ex) 
+            {
+                return StatusCode(500, "Korisnik nije obrisan, greska: " + ex.Message);
+            }
+            
+        }
     }
 }
