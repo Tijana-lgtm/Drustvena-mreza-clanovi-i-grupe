@@ -22,13 +22,21 @@ namespace DrustveneMreze.Controllers
         {
             groupRepository = new GroupDbRepository (configuration);
         }
+
         [HttpGet]
-        public ActionResult<List<Group>> GetAll()
+        public ActionResult<List<Group>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                List<Group> groupsFromDb = groupRepository.GetAll();
-                return Ok(groupsFromDb);
+                List<Group> groupsFromDb = groupRepository.GetAll(page, pageSize);
+                int totalCount = groupRepository.CountAll();
+                return Ok(new
+                {
+                    Data = groupsFromDb,
+                    TotalCount = totalCount,
+                    Page = page,
+                    PageSize = pageSize
+                });
             }
             catch (Exception ex)
             {

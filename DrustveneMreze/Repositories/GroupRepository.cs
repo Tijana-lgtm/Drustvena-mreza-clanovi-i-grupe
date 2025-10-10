@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using DrustveneMreze.Domain;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.Sqlite;
 
 
@@ -143,7 +144,7 @@ namespace DrustveneMreze.Repositories
 
             return group;
         }
-        public List<Group> GetAll()
+        public List<Group> GetAll(int page, int pageSize)
         {
             List<Group> groups = new List<Group>();
 
@@ -152,10 +153,14 @@ namespace DrustveneMreze.Repositories
                 SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
-                string query = "SELECT Id, Name, CreationDate FROM Groups";
+                string query = @"SELECT Id, Name, CreationDate FROM Groups
+                         LIMIT @PageSize OFFSET @Offset";
 
                 using (SqliteCommand command = new SqliteCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("@PageSize", pageSize);
+                    command.Parameters.AddWithValue("@Offset", pageSize * (page - 1));
+
                     using (SqliteDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -191,6 +196,26 @@ namespace DrustveneMreze.Repositories
             }
 
             return groups;
+        }
+        public int CountAll()
+        {
+            int count = 0;
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = "SELECT COUNT(*) FROM Groups";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                count = Convert.ToInt32(command.ExecuteScalar());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error counting groups: {ex.Message}");
+                throw;
+            }
+            return count;
         }
 
         public int Create(Group newGroup)
