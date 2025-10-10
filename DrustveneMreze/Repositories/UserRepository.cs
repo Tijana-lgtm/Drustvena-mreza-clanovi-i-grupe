@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
 using DrustveneMreze.Domain;
 using Microsoft.Data.Sqlite;
 
@@ -54,13 +55,19 @@ namespace DrustveneMreze.Repositories
 
     public class UserDbRepository
     {
+        private readonly string connectionString;
+
+        public UserDbRepository(IConfiguration configuration)
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
         public List<User> GetAll()
         {
-            List<User> users = new List<User>();
+            List<User> users = new List<User>();       
 
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
@@ -82,9 +89,25 @@ namespace DrustveneMreze.Repositories
                     users.Add(user);
                 }
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
 
 
@@ -95,7 +118,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
                 string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users WHERE Id = @id";
                 using SqliteCommand command = new SqliteCommand(query, connection);
@@ -114,9 +137,25 @@ namespace DrustveneMreze.Repositories
                     };
                 }
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Greska pri citanju korisnika: " + ex.Message);
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
             return null;
         }
@@ -125,7 +164,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "iNSERT INTO Users (Username, Name, Surname, Birthday) VALUES (@username, @name, @surname, @birthday); " + "SELECT LAST_INSERT_ROWID();";
@@ -141,10 +180,25 @@ namespace DrustveneMreze.Repositories
                 user.Id = lastId;
                 return user;
             }
-            catch(Exception ex) 
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri kreiranju korisnika: " + ex.Message);
-                return null;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -152,7 +206,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "UPDATE Users SET Username = @username, Name = @name, Surname = @surname, Birthday = @Birthday WHERE Id = @id";
@@ -166,10 +220,20 @@ namespace DrustveneMreze.Repositories
                 int rows = command.ExecuteNonQuery();
                 return rows > 0;
             }
-            catch(Exception ex)
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri azuriranju korisnika: " + ex.Message);
-                return false;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -177,7 +241,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "DELETE FROM Users WHERE Id = @id";
@@ -187,10 +251,20 @@ namespace DrustveneMreze.Repositories
                 int rows = command.ExecuteNonQuery();
                 return rows > 0;
             }
-            catch( Exception ex )
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri brisanju korisnika: " + ex.Message);
-                return false;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
     }
