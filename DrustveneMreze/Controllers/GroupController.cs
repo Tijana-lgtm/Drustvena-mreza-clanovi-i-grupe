@@ -48,36 +48,48 @@ namespace DrustveneMreze.Controllers
                 return BadRequest();
             }
 
-            newGroup.Id = GetNewId(GroupRepository.Data.Keys.ToList());
-            GroupRepository.Data[newGroup.Id] = newGroup;
+            int newId = groupRepository.Create(newGroup);
+            if (newId == -1)
+            {
+                return StatusCode(500, "Greska pri kreiranju grupe.");
+            }
 
+            newGroup.Id = newId;
             return Ok(newGroup);
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult Update(int id, [FromBody] Group updatedGroup)
+        {
+            if (id != updatedGroup.Id)
+            {
+                return BadRequest("ID u putanji i u telu zahteva se ne poklapaju.");
+            }
+
+            if (string.IsNullOrWhiteSpace(updatedGroup.GroupName) || updatedGroup.Incorporation == DateTime.MinValue)
+            {
+                return BadRequest();
+            }
+
+            bool updated = groupRepository.Update(updatedGroup);
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            if (!GroupRepository.Data.ContainsKey(id))
+            bool deleted = groupRepository.Delete(id);
+            if (!deleted)
             {
                 return NotFound();
             }
-
-            GroupRepository.Data.Remove(id);
-
             return NoContent();
         }
 
-        private int GetNewId(List<int> ids)
-        {
-            int maxId = 0;
-            foreach(int id in ids)
-            {
-                if(id > maxId)
-                {
-                    maxId = id;
-                }
-            }
-            return maxId + 1;
-        }
     }
 }

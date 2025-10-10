@@ -178,5 +178,78 @@ namespace DrustveneMreze.Repositories
 
             return groups;
         }
+
+        public int Create(Group newGroup)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = @"INSERT INTO Groups (Name, CreationDate) VALUES (@Name, @CreationDate); 
+                         SELECT LAST_INSERT_ROWID();";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@Name", newGroup.GroupName);
+                command.Parameters.AddWithValue("@CreationDate", newGroup.Incorporation.ToString("yyyy-MM-dd"));
+
+                int newId = Convert.ToInt32(command.ExecuteScalar());
+                return newId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska pri kreiranju grupe: {ex.Message}");
+                return -1;
+            }
+        }
+
+        public bool Update(Group updatedGroup)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "UPDATE Groups SET Name = @Name, CreationDate = @CreationDate WHERE Id = @Id";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@Name", updatedGroup.GroupName);
+                command.Parameters.AddWithValue("@CreationDate", updatedGroup.Incorporation.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("@Id", updatedGroup.Id);
+
+                int rowsAffected = command.ExecuteNonQuery();
+
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska pri azuriranju grupe: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool Delete(int id)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "DELETE FROM Groups WHERE Id = @Id";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@Id", id);
+
+                int rowsAffected = command.ExecuteNonQuery();
+
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neocekivana greska pri brisanju grupe: {ex.Message}");
+                return false;
+            }
+        }
+
     }
 }
