@@ -87,13 +87,19 @@ namespace DrustveneMreze.Repositories
     }
     public class GroupDbRepository
     {
+        private readonly string connectionString;
+
+        public GroupDbRepository (IConfiguration configuration)
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
         public Group GetById(int id)
         {
             Group group = null;
 
             try
             {
-                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Name, CreationDate FROM Groups WHERE Id = @Id";
@@ -117,18 +123,22 @@ namespace DrustveneMreze.Repositories
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greska u formatu podataka: {ex.Message}");
+                throw;
             }
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greska pri konekciji ili SQL upitu: {ex.Message}");
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Pogresna operacija nad konekcijom ili komandama: {ex.Message}");
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neocekivana greska: {ex.Message}");
+                throw;
             }
 
             return group;
@@ -139,7 +149,7 @@ namespace DrustveneMreze.Repositories
 
             try
             {
-                SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Name, CreationDate FROM Groups";
@@ -162,18 +172,22 @@ namespace DrustveneMreze.Repositories
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greska u formatu podataka: {ex.Message}");
+                throw;
             }
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greska pri konekciji ili SQL upitu: {ex.Message}");
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Pogresna operacija nad konekcijom ili komandama: {ex.Message}");
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neocekivana greska: {ex.Message}");
+                throw;
             }
 
             return groups;
@@ -183,7 +197,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = @"INSERT INTO Groups (Name, CreationDate) VALUES (@Name, @CreationDate); 
@@ -196,10 +210,25 @@ namespace DrustveneMreze.Repositories
                 int newId = Convert.ToInt32(command.ExecuteScalar());
                 return newId;
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Neocekivana greska pri kreiranju grupe: {ex.Message}");
-                return -1;
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -207,7 +236,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "UPDATE Groups SET Name = @Name, CreationDate = @CreationDate WHERE Id = @Id";
@@ -221,10 +250,20 @@ namespace DrustveneMreze.Repositories
 
                 return rowsAffected > 0;
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Neocekivana greska pri azuriranju grupe: {ex.Message}");
-                return false;
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -232,7 +271,7 @@ namespace DrustveneMreze.Repositories
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "DELETE FROM Groups WHERE Id = @Id";
@@ -244,12 +283,21 @@ namespace DrustveneMreze.Repositories
 
                 return rowsAffected > 0;
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Neocekivana greska pri brisanju grupe: {ex.Message}");
-                return false;
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
-
     }
 }
