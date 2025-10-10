@@ -89,9 +89,24 @@ namespace DrustveneMreze.Repositories
                     users.Add(user);
                 }
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Greska pri citanju iz baze " + ex.Message);
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
                 throw;
             }
 
@@ -122,9 +137,25 @@ namespace DrustveneMreze.Repositories
                     };
                 }
             }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Greska pri citanju korisnika: " + ex.Message);
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
             return null;
         }
@@ -149,10 +180,25 @@ namespace DrustveneMreze.Repositories
                 user.Id = lastId;
                 return user;
             }
-            catch(Exception ex) 
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri kreiranju korisnika: " + ex.Message);
-                return null;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -174,10 +220,20 @@ namespace DrustveneMreze.Repositories
                 int rows = command.ExecuteNonQuery();
                 return rows > 0;
             }
-            catch(Exception ex)
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri azuriranju korisnika: " + ex.Message);
-                return false;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
 
@@ -195,10 +251,20 @@ namespace DrustveneMreze.Repositories
                 int rows = command.ExecuteNonQuery();
                 return rows > 0;
             }
-            catch( Exception ex )
+            catch (SqliteException ex)
             {
-                Console.WriteLine("Greska pri brisanju korisnika: " + ex.Message);
-                return false;
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
     }
