@@ -120,6 +120,79 @@ namespace DrustveneMreze.Repositories
             }
             return null;
         }
+
+        public User CreateUser(User user)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "iNSERT INTO Users (Username, Name, Surname, Birthday) VALUES (@username, @name, @surname, @birthday); " + "SELECT LAST_INSERT_ROWID();";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@username", user.Username);
+                command.Parameters.AddWithValue("@name", user.Name);
+                command.Parameters.AddWithValue("@surname", user.Surname);
+                command.Parameters.AddWithValue("@birthday", user.BirthDate.ToString("yyyy-MM-dd"));
+
+                int lastId = Convert.ToInt32(command.ExecuteScalar());
+                Console.WriteLine($"Id korisnika koji je poslednji unet je: {lastId}");
+                user.Id = lastId;
+                return user;
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine("Greska pri kreiranju korisnika: " + ex.Message);
+                return null;
+            }
+        }
+
+        public bool UpdateUser(int id, User user)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "UPDATE Users SET Username = @username, Name = @name, Surname = @surname, Birthday = @Birthday WHERE Id = @id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@username", user.Username);
+                command.Parameters.AddWithValue("@name", user.Name);
+                command.Parameters.AddWithValue("@surname", user.Surname);
+                command.Parameters.AddWithValue("@birthday", user.BirthDate.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("@id", id);
+
+                int rows = command.ExecuteNonQuery();
+                return rows > 0;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Greska pri azuriranju korisnika: " + ex.Message);
+                return false;
+            }
+        }
+
+        public bool Delete(int id)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=Data/database.db");
+                connection.Open();
+
+                string query = "DELETE FROM Users WHERE Id = @id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@id", id);
+
+                int rows = command.ExecuteNonQuery();
+                return rows > 0;
+            }
+            catch( Exception ex )
+            {
+                Console.WriteLine("Greska pri brisanju korisnika: " + ex.Message);
+                return false;
+            }
+        }
     }
 }
 

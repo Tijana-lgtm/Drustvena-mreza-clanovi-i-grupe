@@ -16,6 +16,10 @@ namespace DrustveneMreze.Controllers
 
         private readonly UserDbRepository userRepository;
 
+        public UserController()
+        {
+            userRepository = new UserDbRepository();
+        }
 
         [HttpGet]
         public ActionResult<List<User>> GetAll()
@@ -28,7 +32,7 @@ namespace DrustveneMreze.Controllers
         [HttpGet("{id}")]
         public ActionResult<User> GetById(int id)
         {
-            GroupRepository groupRepository = new GroupRepository();
+
 
             if (!UserRepository.Data.ContainsKey(id))
             {
@@ -45,10 +49,12 @@ namespace DrustveneMreze.Controllers
                 return BadRequest();
             }
 
-            newUser.Id = SracunajNoviId(UserRepository.Data.Keys.ToList());
-            UserRepository.Data[newUser.Id] = newUser;
-
-            return Ok(newUser);
+            var createdUser = userRepository.CreateUser(newUser);
+            if (createdUser == null)
+            {
+                return StatusCode(500, "Greska pri kreiranju korisnika.");
+            }
+            return Ok(createdUser);
         }
 
         [HttpPut("{id}")]
@@ -58,18 +64,36 @@ namespace DrustveneMreze.Controllers
             {
                 return BadRequest();
             }
-            if (!UserRepository.Data.ContainsKey(id))
+            var existingUser = userRepository.GetById(id);
+            if (existingUser == null)
             {
-                return NotFound();
+                return NotFound("Korisnik nije pronadjen.");
             }
 
-            User user = UserRepository.Data[id];
-            user.Username = uUser.Username;
-            user.Name = uUser.Name;
-            user.Surname = uUser.Surname;
-            user.BirthDate = uUser.BirthDate;
+            bool success = userRepository.UpdateUser(id, uUser);
+            if (!success)
+            {
+                return StatusCode(500, "Greska pri azuriranju korisnika.");
+            }
+            uUser.Id = id;
+            return Ok(uUser);
+        }
 
-            return Ok(user);
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            var deleteUser = userRepository.GetById(id);
+            if(deleteUser == null)
+            {
+                return NotFound("Korisnik ne postoji.");
+            }
+
+            bool sucessfullDel = userRepository.Delete(id);
+            if (!sucessfullDel)
+            {
+                return StatusCode(500, "Greska pri brisanju korisnika.");
+            }
+            return Ok("Korisnik uspesno obrisan");
         }
 
 
