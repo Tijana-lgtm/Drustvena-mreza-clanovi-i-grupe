@@ -21,19 +21,33 @@ namespace DrustveneMreze.Controllers
             userRepository = new UserDbRepository(configuration);
         }
 
-        [HttpGet]
-        public ActionResult<List<User>> GetAll()
+        
+
+        [HttpGet("paginacija")]
+        public ActionResult<User> GetPag([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                List<User> users = userRepository.GetAll();
-                return Ok(users);
+                if (page <= 0 || pageSize <= 0)
+                {
+                    return BadRequest("Strana i broj elemenata ne mogu biti negativan broj.");
+                }
+                var users = userRepository.GetAll(page, pageSize);
+                var total = userRepository.CountAll();
+
+                return Ok(new
+                {
+                    Data = users,
+                    Total = total,
+                    Page = page,
+                    PageSize = pageSize
+                });
+              
             }
             catch (Exception ex)
             {
                 return StatusCode(500, "Greska pri ucitavanju korisnika: " + ex.Message);
             }
-            
         }
 
         

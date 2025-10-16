@@ -61,18 +61,24 @@ namespace DrustveneMreze.Repositories
         {
             connectionString = configuration["ConnectionString:SQLiteConnection"];
         }
-        public List<User> GetAll()
+        public List<User> GetAll(int page, int pageSize)
         {
-            List<User> users = new List<User>();       
+            List<User> users = new List<User>();
+           int offset = pageSize * (page - 1);           
+
 
             try
             {
                 using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
-                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+                string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users LIMIT @PageSize OFFSET @Offset";
 
                 using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@PageSize", pageSize);  
+                command.Parameters.AddWithValue("@Offset", offset);      
+
                 using SqliteDataReader reader = command.ExecuteReader();
 
                 while (reader.Read())
@@ -112,6 +118,25 @@ namespace DrustveneMreze.Repositories
 
 
             return users;
+        }
+
+        public int CountAll()
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = "SELECT COUNT(*) FROM Users";
+                using SqliteCommand command = new SqliteCommand( query, connection);
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Greska priliom brojanja korisnika: {ex.Message}");
+                throw;
+            }
         }
 
         public User GetById(int id)
