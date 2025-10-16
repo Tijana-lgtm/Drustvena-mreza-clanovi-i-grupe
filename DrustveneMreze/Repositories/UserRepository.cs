@@ -167,7 +167,7 @@ namespace DrustveneMreze.Repositories
                 using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
-                string query = "iNSERT INTO Users (Username, Name, Surname, Birthday) VALUES (@username, @name, @surname, @birthday); " + "SELECT LAST_INSERT_ROWID();";
+                string query = "INSERT INTO Users (Username, Name, Surname, Birthday) VALUES (@username, @name, @surname, @birthday); " + "SELECT LAST_INSERT_ROWID();";
 
                 using SqliteCommand command = new SqliteCommand(query, connection);
                 command.Parameters.AddWithValue("@username", user.Username);

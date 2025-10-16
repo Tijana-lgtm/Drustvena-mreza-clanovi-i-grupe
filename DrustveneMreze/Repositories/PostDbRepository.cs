@@ -1,0 +1,70 @@
+﻿using DrustveneMreze.Domain;
+using Microsoft.Data.Sqlite;
+
+namespace DrustveneMreze.Repositories
+{
+    public class PostDbRepository
+    {
+        private readonly string connectionString;
+
+        public PostDbRepository(IConfiguration configuration)
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
+
+        public List<Post> GetAll()
+        {
+            List<Post> posts = new List<Post>();
+
+            try
+            {
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+                        SELECT p.Id as PostId, p.UserId as PostUserId, p.Content, p.Date,
+                        u.Id as UserId, u.Username, u.Name, u.Surname, u.Birthday
+                        FROM Posts p
+                        INNER JOIN Users u ON p.UserId = u.Id
+                        ORDER BY p.Date DESC";
+
+                    using (SqliteCommand command = new SqliteCommand(query, connection))
+                    {
+                        using (SqliteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Post post = new Post
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("PostId")),
+                                    UserId = reader.GetInt32(reader.GetOrdinal("PostUserId")),
+                                    Content = reader.GetString(reader.GetOrdinal("Content")),
+
+                                    Date = DateTime.Parse(reader.GetString(reader.GetOrdinal("Date"))),
+
+                                    User = new User
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                        Username = reader.GetString(reader.GetOrdinal("Username")),
+                                        Name = reader.GetString(reader.GetOrdinal("Name")),
+                                        Surname = reader.GetString(reader.GetOrdinal("Surname")),
+                                        BirthDate = DateTime.Parse(reader.GetString(reader.GetOrdinal("Birthday")))
+                                    }
+                                };
+                                posts.Add(post);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching posts: {ex.Message}");
+                throw new Exception("An error occurred while fetching posts.", ex);
+            }
+            return posts;
+        }
+    }
+}
+
