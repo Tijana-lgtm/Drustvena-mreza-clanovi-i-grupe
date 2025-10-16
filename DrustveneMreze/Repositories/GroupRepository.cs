@@ -103,7 +103,11 @@ namespace DrustveneMreze.Repositories
                 SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
-                string query = "SELECT Id, Name, CreationDate FROM Groups WHERE Id = @Id";
+                string query = @"
+                    SELECT g.Id AS GroupId, g.Name AS GroupName, g.CreationDate, u.Id AS UserId, u.Name AS UserName, u.Username FROM Groups g
+                    LEFT JOIN GroupMemberships gm ON g.Id =gm.GroupId
+                    LEFT JOIN Users u ON gm.UserId = u.Id
+                    WHERE g.Id = @Id;";
 
                 using (SqliteCommand command = new SqliteCommand(query, connection))
                 {
@@ -111,12 +115,29 @@ namespace DrustveneMreze.Repositories
 
                     using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
-                            group = new Group();
-                            group.Id = reader.GetInt32(0);
-                            group.GroupName = reader.GetString(1);
-                            group.Incorporation = DateTime.Parse(reader.GetString(2));
+                            if(group == null)
+                            {
+                                group = new Group()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("GroupId")),
+                                    GroupName = reader.GetString(reader.GetOrdinal("GroupName")),
+                                    Incorporation = DateTime.Parse(reader.GetString(reader.GetOrdinal("CreationDate"))),
+                                    Users = new List<User>()
+                                };
+                            }
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("UserId")))
+                            {
+                                User user = new User
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Name = reader.GetString(reader.GetOrdinal("UserName")),
+                                    Username = reader.GetString(reader.GetOrdinal("Username"))
+                                };
+                                group.Users.Add(user);
+                            }
                         }
                     }
                 }

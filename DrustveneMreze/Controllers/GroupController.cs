@@ -56,9 +56,10 @@ namespace DrustveneMreze.Controllers
                 }
                 return Ok(group);
             }
-            catch
+            catch(Exception ex)
             {
-                return Problem("An error occurred while fetching the group.");
+                Console.WriteLine("Greska:" + ex.ToString());
+                return Problem(detail: ex.Message, title: "Database error");
             }
 
         }
