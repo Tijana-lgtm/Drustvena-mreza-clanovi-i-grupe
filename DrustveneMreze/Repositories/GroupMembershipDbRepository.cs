@@ -58,5 +58,28 @@ namespace DrustveneMreze.Repositories
                 throw;
             }
         }
+
+        public bool RemoveUserFromGroup(int groupId, int userId)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionStr);
+                connection.Open();
+
+                string query = "DELETE FROM GroupMemberships WHERE GroupId = @GroupId AND UserId = @UserId";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@GroupId", groupId);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                int affectedRows = command.ExecuteNonQuery();
+                return affectedRows > 0;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Greska: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

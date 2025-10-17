@@ -50,31 +50,24 @@ namespace DrustveneMreze.Controllers
             
         }
 
-        //[HttpDelete("{groupId}")]
-        //public ActionResult<User> Delete(int groupId, int userId)
-        //{
+        [HttpDelete]
+        public ActionResult RemoveUser(int groupId, int userId)
+        {
+            try
+            {
+                bool deleted = GMDbRepository.RemoveUserFromGroup(groupId, userId);
+                if (deleted)
+                {
+                    return NoContent();
+                }
+                return NotFound("Grupa ili korisnik nisu pronadjeni.");
+            }
+            catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
-        //    if (!GroupRepository.Data.ContainsKey(groupId))
-        //    {
-        //        return NotFound();
-        //    }
-        //    if (!UserRepository.Data.ContainsKey(userId))
-        //    {
-        //        return NotFound();
-        //    }
-        //    Group group = GroupRepository.Data[groupId];
-        //    User user = UserRepository.Data[userId];
-
-        //    if (!group.Users.Contains(user))
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    group.Users.Remove(user);
-        //    user.Groups.Remove(group);
-        //    groupRepository.Save();
-
-        //    return Ok(user);
-        //}
+ 
     }
 }
