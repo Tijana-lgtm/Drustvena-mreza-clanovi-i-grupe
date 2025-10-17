@@ -5,18 +5,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DrustveneMreze.Controllers
 {
-    [Route("api/posts")]
+    [Route("api")]
     [ApiController]
     public class PostController : ControllerBase
     {
         private readonly PostDbRepository postRepository;
+        private readonly UserDbRepository userRepository;
+
 
         public PostController(IConfiguration configuration)
         {
             postRepository = new PostDbRepository(configuration);
+            userRepository = new UserDbRepository(configuration);
+
         }
 
-        [HttpGet]
+        [HttpGet ("posts")]
         public ActionResult<List<Post>> GetAll()
         {
             try
@@ -27,6 +31,39 @@ namespace DrustveneMreze.Controllers
             catch
             {
                 return Problem("An error occurred while fetching posts.");
+            }
+        }
+
+        [HttpPost("users/{userId}/posts")]
+        public ActionResult<Post> CreatePost(int userId, [FromBody] Post newPost)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(newPost.Content))
+                {
+                    return BadRequest("Post field can't be empty.");
+                }
+
+                User user = userRepository.GetById(userId);
+                if (user == null)
+                {
+                    return NotFound( "User" + userId + "does not exist.");
+                }
+
+                newPost.UserId=user.Id;
+                newPost.Date=DateTime.Now;
+
+                Post createdPost = postRepository.CreatePost(newPost);
+
+                if (createdPost == null)
+                {
+                    return BadRequest("Creting post error");
+                }
+                return Ok(createdPost);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Kreiranje korisnika nije uspesno, greska: " + ex.Message);
             }
         }
     }

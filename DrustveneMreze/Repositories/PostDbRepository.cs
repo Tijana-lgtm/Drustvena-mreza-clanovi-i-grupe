@@ -65,6 +65,43 @@ namespace DrustveneMreze.Repositories
             }
             return posts;
         }
+
+        public Post CreatePost(Post post)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = "INSERT INTO Posts(UserId, Content, Date)\r\nVALUES (@UserId, @Content, @Date);\r\n; " + "SELECT LAST_INSERT_ROWID();";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@content", post.Content);
+                command.Parameters.AddWithValue("@date", post.Date.ToString("yyyy-MM-dd"));
+
+                return post;
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
 
