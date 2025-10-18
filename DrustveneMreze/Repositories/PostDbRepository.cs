@@ -65,7 +65,67 @@ namespace DrustveneMreze.Repositories
             }
             return posts;
         }
+        public Post GetById(int id)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
 
+                string query = @"
+                    SELECT p.Id as PostId, p.UserId, p.Content, p.Date,
+                    u.Id as UserId, u.Username, u.Name, u.Surname, u.Birthday
+                    FROM Posts p
+                    INNER JOIN Users u ON p.UserId = u.Id
+                    WHERE p.Id = @id";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@id", id);
+
+                using SqliteDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    int? userId = reader["UserId"] != DBNull.Value ? Convert.ToInt32(reader["UserId"]) : null;
+
+                    return new Post
+                    {
+                        Id = Convert.ToInt32(reader["PostId"]),
+                        UserId = userId,
+                        Content = reader["Content"].ToString(),
+                        Date = DateTime.Parse(reader["Date"].ToString()),
+                        User = userId.HasValue ? new User
+                        {
+                            Id = Convert.ToInt32(reader["UserId"]),
+                            Username = reader["Username"].ToString(),
+                            Name = reader["Name"].ToString(),
+                            Surname = reader["Surname"].ToString(),
+                            BirthDate = DateTime.Parse(reader["Birthday"].ToString())
+                        } : null
+                    };
+                }
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
+            }
+            return null;
+        }
         public Post CreatePost(Post post)
         {
             try
@@ -89,6 +149,36 @@ namespace DrustveneMreze.Repositories
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u formatu podataka: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Greška jer konekcija nije ili je više puta otvorena: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
+            }
+        }
+        public bool Delete(int id)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = "DELETE FROM Posts WHERE Id = @id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@id", id);
+
+                int rows = command.ExecuteNonQuery();
+                return rows > 0;
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri povezivanju sa bazom ili izvršavanju SQL upita: {ex.Message}");
                 throw;
             }
             catch (InvalidOperationException ex)

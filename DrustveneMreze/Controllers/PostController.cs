@@ -66,5 +66,28 @@ namespace DrustveneMreze.Controllers
                 return StatusCode(500, "Kreiranje korisnika nije uspesno, greska: " + ex.Message);
             }
         }
+
+        [HttpDelete("posts/{postId}")]
+        public ActionResult Delete(int postId)
+        {
+            try
+            {
+                Post deletePost = postRepository.GetById(postId);
+                if (deletePost == null)
+                {
+                    return NotFound("Objava ne postoji.");
+                }
+                bool successfullDel = postRepository.Delete(postId);
+                if (!successfullDel)
+                {
+                    return StatusCode(500, "Greska pri brisanju objave.");
+                }
+                return Ok("Objava uspesno obrisana");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Objava nije obrisana, greska: " + ex.Message);
+            }
+        }
     }
 }
